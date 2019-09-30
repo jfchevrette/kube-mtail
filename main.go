@@ -14,6 +14,7 @@ import (
 
 func main() {
 	namespace := flag.String("namespace", "", "(required) namespace to target")
+	interval := flag.Int("interval", 30, "(optional) interval in which the logs are retrieved")
 	selector := flag.String("selector", "", "(optional) Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. key1=value1,key2=value2")
 
 	var kubeconfig *string
@@ -77,10 +78,17 @@ func main() {
 	}
 
 	var since int64
-	since = int64((5 * time.Second).Seconds())
-	ticker := time.NewTicker(5 * time.Second)
+	intervalDuration := time.Duration(*interval)
+	since = int64((intervalDuration * time.Second).Seconds())
+	ticker := time.NewTicker(intervalDuration * time.Second)
+	log.Printf("will retrieve logs every %d seconds", intervalDuration)
 	for range ticker.C {
+		log.Println("refreshing pods list")
 		pods, _ := client.Clientset.CoreV1().Pods(*namespace).List(metav1.ListOptions{LabelSelector: *selector})
+		if len(pods.Items) == 0 {
+			log.Printf("Warning: no pods found in namespace %s", *namespace)
+		}
+		log.Printf("retrieving logs from %d pods", len(pods.Items))
 		for _, pod := range pods.Items {
 			for _, container := range pod.Spec.Containers {
 				logs, err := client.GetPodLogs(pod, container, since)
