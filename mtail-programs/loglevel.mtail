@@ -1,0 +1,7 @@
+counter log_severity by severity, component
+
+/^/ +
+/level=(?P<severity>[A-Za-z]+) / +
+/.*component=(?P<component>[0-9A-Za-z-_]+) / {
+    log_severity[$severity][$component]++
+}
