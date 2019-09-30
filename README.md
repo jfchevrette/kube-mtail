@@ -8,7 +8,7 @@ kube-mtail is a tool used to retrieve logs from kubernetes pods and process them
 
 ## Installing
 
-user    go get github.com/jfchevrette/kube-mtail
+    go get github.com/jfchevrette/kube-mtail
 
     kube-mtail -h
       -kubeconfig string
